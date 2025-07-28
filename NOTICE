@@ -1,0 +1,6 @@
+This project uses the following third-party libraries:
+
+- tonutils-go (Apache License 2.0) – used for core TON networking (ADNL, RLDP, DHT)
+  https://github.com/xssnick/tonutils-go
+
+This project is not affiliated with the authors of tonutils-go.
