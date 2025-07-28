@@ -18,7 +18,7 @@ This project uses the following open-source libraries:
 
 🔐 End-to-End Encryption – Messages secured with one-time ed25519 keys.
 
-🌐 Cross-Platform – Files can be exchanged wirelessly between macOS and Android over Wi-Fi (see how it [works](https://peerlist.io/designervoid/project/sddao), this repo contains only the Linux build).
+⚙️ Cross-Platform – Data can be exchanged wirelessly between macOS and Android over Wi-Fi (see how it [works](https://peerlist.io/designervoid/project/sddao), this repo contains only the Linux build).
 
 👁️‍🗨️ No tracking – We’re not watching you.
 
