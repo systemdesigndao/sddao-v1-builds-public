@@ -12,9 +12,9 @@ This project uses the following open-source libraries:
 
 ## ✨ Features
 
-🔒 True P2P Communication – Direct peer-to-peer messaging without central servers using Wi-Fi.
+🔒 True P2P Communication – Direct peer-to-peer messaging without central servers.
 
-📡 Large Message Support – Seamless delivery of encrypted messages up to 10MB.
+📡 Large Message Support – Delivery of encrypted messages up to 10MB.
 
 🔐 End-to-End Encryption – Messages secured with one-time ed25519 keys.
 
