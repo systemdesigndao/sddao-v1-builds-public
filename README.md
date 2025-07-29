@@ -4,6 +4,8 @@
 
 [![Go Version](https://img.shields.io/badge/Go-1.23+-blue.svg)](https://golang.org)
 
+🎥 Watch video demo on [PeerList](https://peerlist.io/designervoid/project/sddao)
+
 ## Dependencies
 
 This project uses the following open-source libraries:
