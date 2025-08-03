@@ -59,6 +59,11 @@ cosign verify-blob \
   sddao-p2p-0.0.2-aarch64
 ```
 
+## Verify file via `virustotal`
+
+Current sha256 from file: `6e0f0d9eb4ae3155f124264b01e030775de86e44f124f191e3926a00c697ee49`  
+Checkout on [VirusTotal](https://www.virustotal.com/gui/file/6e0f0d9eb4ae3155f124264b01e030775de86e44f124f191e3926a00c697ee49)  
+
 ## 📋 Available Commands
 
 Once your node is running, use these interactive commands:
