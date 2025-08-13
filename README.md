@@ -8,14 +8,15 @@
 
 ## 🆕 What's New in 0.0.3
 
-- **Ollama integration** – you can now send prompts to a remote Ollama robot over TON.
-- New command: /ollama <peer_key> <model> <prompt>
+- **Ollama integration** – you can now send prompts to a remote Ollama robot over TON (`./sddao-p2p-0.0.3-aarch64 AI-Robot <ip> <port>`)
+- New command: `/ollama <peer_key> <model> <prompt>`  
 
 ## Dependencies
 
 This project uses the following open-source libraries:
 
 - [`tonutils-go`](https://github.com/xssnick/tonutils-go) – Provides core TON networking primitives including ADNL, DHT, and RLDP, enabling true P2P connectivity and message delivery.
+- [`Ollama`](https://github.com/xssnick/tonutils-go) – Provides core TON networking primitives including ADNL, DHT, and RLDP, enabling true P2P connectivity and message delivery.
 
 ## ✨ Features
 
@@ -41,12 +42,27 @@ Download TON Mainnet Config (https://ton.org/global-config.json) to `config.json
 
 ### Running Nodes
 
+#### 0.0.2
+
 ```bash
 # Start first node (Alice)
 ./sddao-p2p-0.0.2-aarch64 Alice <ip> <port>
 
 # Start second node (Bob) 
 ./sddao-p2p-0.0.2-aarch64 Bob <ip> <port>
+```
+
+#### 0.0.3
+
+```bash
+# Start first node (Alice)
+./sddao-p2p-0.0.3-aarch64 Alice <ip> <port>
+
+# Start second node (Bob) 
+./sddao-p2p-0.0.3-aarch64 Bob <ip> <port>
+
+# Start third node (AI-Robot)
+./sddao-p2p-0.0.3-aarch64 AI-Robot <ip> <port>
 ```
 
 
@@ -104,13 +120,13 @@ Once your node is running, use these interactive commands:
 
 ## 📖 Example Usage
 
-### Linux
+### 0.0.2 Linux
 
 1. **Start Alice Node**
    ```bash
    ./sddao-p2p-0.0.2-aarch64 Alice 127.0.0.0 8080
    ```
-   *Output: Alice's public key will be displayed*
+   *Output: Alice public key will be displayed*
 
 2. **Start Bob Node**
    ```bash
@@ -138,6 +154,35 @@ Once your node is running, use these interactive commands:
    # From Alice to Bob  
    /msg <Bob_public_key> Hi Bob!
    ```
+
+### 0.0.3 Linux
+
+1. **Start AI-Robot Node**
+   ```bash
+   ./sddao-p2p-0.0.3-aarch64 AI-Robot 127.0.0.0 8080
+   ```
+   *Output: AI-Robot public key will be displayed*
+
+2. **Start Alice Node**
+   ```bash
+   ./sddao-p2p-0.0.3-aarch64 Alice 127.0.0.0 8081
+   ```
+   *Output: Alice public key will be displayed*
+
+3. **Establish Connection**  
+
+   In Alice terminal:
+   ```bash
+   /connect <AI-Robot_public_key>
+   ```
+
+3. **Send message to AI-Robot**  
+
+   In Alice terminal:
+   ```bash
+   /ollama <AI-Robot_public_key> deepseek-r1:1.5b hey
+   ```
+    
 
 ### Android
 
