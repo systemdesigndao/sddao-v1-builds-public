@@ -16,7 +16,7 @@
 This project uses the following open-source libraries:
 
 - [`tonutils-go`](https://github.com/xssnick/tonutils-go) – Provides core TON networking primitives including ADNL, DHT, and RLDP, enabling true P2P connectivity and message delivery.
-- [`Ollama`](https://github.com/xssnick/tonutils-go) – Provides core TON networking primitives including ADNL, DHT, and RLDP, enabling true P2P connectivity and message delivery.
+- [`ollama`](https://github.com/ollama/ollama) – Local and remote AI models provider; allows running AI agents and responding to prompts from peers over the network.
 
 ## ✨ Features
 
