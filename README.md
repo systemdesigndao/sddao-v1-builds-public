@@ -8,7 +8,7 @@
 
 ## 🆕 What's New in 0.0.3
 
-- **Ollama integration** – you can now send prompts to a remote Ollama robot over TON (`./sddao-p2p-0.0.3-aarch64 AI-Robot <ip> <port>`)
+- **Ollama integration** – you can now send prompts to a local Ollama robot over TON (`./sddao-p2p-0.0.3-aarch64 AI-Robot <ip> <port>`)
 - New command: `/ollama <peer_key> <model> <prompt>`  
 
 ## Dependencies
@@ -16,7 +16,7 @@
 This project uses the following open-source libraries:
 
 - [`tonutils-go`](https://github.com/xssnick/tonutils-go) – Provides core TON networking primitives including ADNL, DHT, and RLDP, enabling true P2P connectivity and message delivery.
-- [`ollama`](https://github.com/ollama/ollama) – Local and remote AI models provider; allows running AI agents and responding to prompts from peers over the network.
+- [`ollama`](https://github.com/ollama/ollama) – Local AI models provider; allows running AI agents and responding to prompts from peers over the network.
 
 ## ✨ Features
 
