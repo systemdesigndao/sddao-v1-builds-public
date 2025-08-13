@@ -6,6 +6,11 @@
 
 🎥 Watch video demo on [PeerList](https://peerlist.io/designervoid/project/sddao)
 
+## 🆕 What's New in 0.0.3
+
+- **Ollama integration** – you can now send prompts to a remote Ollama robot over TON.
+- New command: /ollama <peer_key> <model> <prompt>
+
 ## Dependencies
 
 This project uses the following open-source libraries:
@@ -79,6 +84,7 @@ Once your node is running, use these interactive commands:
 |---------|-------------|---------|
 | `/connect <key>` | Connect to peer via DHT using public key | `/connect a1b2c3d4...` |
 | `/msg <key> <text>` | Send message via RLDP | `/msg a1b2c3d4... Hello!` |
+| `/ollama <peer_key> <model> <prompt>` (0.0.3 only) | Send prompt to a remote Ollama instance over TON | `/ollama a1b2c3d4... deepseek-r1:1.5b hey` |
 | `/list` | Show connected peers | `/list` |
 | `/exit` | Exit the application | `/exit` |
 
