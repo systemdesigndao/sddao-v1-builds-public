@@ -61,8 +61,15 @@ cosign verify-blob \
 
 ## Verify file via `virustotal`
 
-Current sha256 from file: `6e0f0d9eb4ae3155f124264b01e030775de86e44f124f191e3926a00c697ee49`  
+### 0.0.2
+
+sha256 from file: `6e0f0d9eb4ae3155f124264b01e030775de86e44f124f191e3926a00c697ee49`  
 Checkout on [VirusTotal](https://www.virustotal.com/gui/file/6e0f0d9eb4ae3155f124264b01e030775de86e44f124f191e3926a00c697ee49)  
+
+### 0.0.3
+
+sha256 from file: `dd43404a13ef9cee569ed22e4509a2dbe4d36ccd6f7b2bffbc40173525405718`  
+Checkout on [VirusTotal](https://www.virustotal.com/gui/file/dd43404a13ef9cee569ed22e4509a2dbe4d36ccd6f7b2bffbc40173525405718)
 
 ## 📋 Available Commands
 
