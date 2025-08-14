@@ -16,7 +16,7 @@
 This project uses the following open-source libraries:
 
 - [`tonutils-go`](https://github.com/xssnick/tonutils-go) – Provides core TON networking primitives including ADNL, DHT, and RLDP, enabling true P2P connectivity and message delivery.
-- [`ollama`](https://github.com/ollama/ollama) – Local AI models provider; allows running AI agents and responding to prompts from peers over the network.
+- [`ollama`](https://github.com/ollama/ollama) – Local AI models provider; allows running AI agents and responding to prompts from peers over the network. 
 
 ## ✨ Features
 
@@ -39,6 +39,10 @@ This project uses the following open-source libraries:
 ### Install `config.json`
 
 Download TON Mainnet Config (https://ton.org/global-config.json) to `config.json` in directory with binary 
+
+### Install `ollama` (only 0.0.3)
+
+You need to install ollama cli and model e.g `deepseek-r1:1.5`. Find how to install `ollama` [here](https://github.com/ollama/ollama).
 
 ### Running Nodes
 
