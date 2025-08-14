@@ -42,7 +42,7 @@ Download TON Mainnet Config (https://ton.org/global-config.json) to `config.json
 
 ### Install `ollama` (only 0.0.3)
 
-You need to install ollama cli and model e.g `deepseek-r1:1.5`. Find how to install `ollama` [here](https://github.com/ollama/ollama).
+You need to install ollama cli and model e.g `deepseek-r1:1.5b`. Find how to install `ollama` [here](https://github.com/ollama/ollama).
 
 ### Running Nodes
 
