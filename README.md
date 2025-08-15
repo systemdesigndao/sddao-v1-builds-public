@@ -48,7 +48,7 @@ flowchart TD
     TON_B -->|response| U
 ```
 
-- [`llama.cpp`](https://github.com/ggml-org/llama.cpp) – Another local AI models provider; `llama-cli` under the hood runs runs directly on user device without HTTP proxy, enabling agents to respond to peer prompts entirely locally. 
+- [`llama.cpp`](https://github.com/ggml-org/llama.cpp) – Another local AI models provider; `llama-cli` under the hood runs directly on user device without HTTP proxy, enabling agents to respond to peer prompts entirely locally. 
 
 ```mermaid
 flowchart TD
