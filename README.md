@@ -118,8 +118,8 @@ Checkout on [VirusTotal](https://www.virustotal.com/gui/file/dd43404a13ef9cee569
 
 ### 0.0.4
 
-sha256 from file: `0971c3b68126f148844cbe10764c01be649c046ed0dc014b5013b6b072bd1d55`  
-Checkout on [VirusTotal](https://www.virustotal.com/gui/file/0971c3b68126f148844cbe10764c01be649c046ed0dc014b5013b6b072bd1d55)
+sha256 from file: `e271e5cf752f572cc1c2f4d6436c78c9fafc42d397f525321a1472eb4b2576a9`  
+Checkout on [VirusTotal](https://www.virustotal.com/gui/file/e271e5cf752f572cc1c2f4d6436c78c9fafc42d397f525321a1472eb4b2576a9)
 
 ## 📋 Available Commands
 
