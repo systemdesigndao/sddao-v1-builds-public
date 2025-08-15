@@ -8,8 +8,15 @@
 
 ## 🆕 What's New in 0.0.3
 
-- **Ollama integration** – you can now send prompts to a local Ollama robot over TON (`./sddao-p2p-0.0.3-aarch64 AI-Robot <ip> <port>`)
+- **Ollama CLI integration** – you can now send prompts to a local Ollama over TON (`./sddao-p2p-0.0.3-aarch64 AI-Robot <ip> <port> ollama`)
 - New command: `/ollama <peer_key> <model> <prompt>`  
+
+## 🆕 What's New in 0.0.4
+
+Download `DeepSeek-R1-Distill-Qwen-1.5B-GGUF` [here](https://huggingface.co/lmstudio-community/DeepSeek-R1-Distill-Qwen-1.5B-GGUF)
+
+- **llama-cli integration** – you can now send prompts to a model using llama-cli over TON (`./sddao-p2p-0.0.4-aarch64 AI-Robot <ip> <port> llama-cli`)
+- New command: `/ai <peer_key> <model> <prompt>`  
 
 ## Dependencies
 
@@ -96,6 +103,11 @@ Checkout on [VirusTotal](https://www.virustotal.com/gui/file/6e0f0d9eb4ae3155f12
 sha256 from file: `dd43404a13ef9cee569ed22e4509a2dbe4d36ccd6f7b2bffbc40173525405718`  
 Checkout on [VirusTotal](https://www.virustotal.com/gui/file/dd43404a13ef9cee569ed22e4509a2dbe4d36ccd6f7b2bffbc40173525405718)
 
+### 0.0.3
+
+sha256 from file: `0971c3b68126f148844cbe10764c01be649c046ed0dc014b5013b6b072bd1d55`  
+Checkout on [VirusTotal](https://www.virustotal.com/gui/file/0971c3b68126f148844cbe10764c01be649c046ed0dc014b5013b6b072bd1d55)
+
 ## 📋 Available Commands
 
 Once your node is running, use these interactive commands:
@@ -104,7 +116,8 @@ Once your node is running, use these interactive commands:
 |---------|-------------|---------|
 | `/connect <key>` | Connect to peer via DHT using public key | `/connect a1b2c3d4...` |
 | `/msg <key> <text>` | Send message via RLDP | `/msg a1b2c3d4... Hello!` |
-| `/ollama <peer_key> <model> <prompt>` (0.0.3 only) | Send prompt to a remote Ollama instance over TON | `/ollama a1b2c3d4... deepseek-r1:1.5b hey` |
+| `/ollama <peer_key> <model> <prompt>` (0.0.3 only) | Send prompt to a local Ollama instance over TON | `/ollama a1b2c3d4... deepseek-r1:1.5b hey` |
+| `/ai <peer_key> <model> <prompt>` (0.0.4 only) | Send prompt to a local Ollama or llama-cli instance over TON | `/ai a1b2c3d4... deepseek-r1:1.5b hey` |
 | `/list` | Show connected peers | `/list` |
 | `/exit` | Exit the application | `/exit` |
 
@@ -185,6 +198,41 @@ Once your node is running, use these interactive commands:
    In Alice terminal:
    ```bash
    /ollama <AI-Robot_public_key> deepseek-r1:1.5b hey
+   ```
+
+### 0.0.4 Linux
+
+1. **Start AI-Robot Node**
+   ```bash
+   ./sddao-p2p-0.0.4-aarch64 AI-Robot 127.0.0.0 8080 llama-cli
+   ```
+   *Output: AI-Robot public key will be displayed*
+
+2. **Start Alice Node**
+   ```bash
+   ./sddao-p2p-0.0.4-aarch64 Alice 127.0.0.0 8081
+   ```
+   *Output: Alice public key will be displayed*
+
+3. **Establish Connection**  
+
+   In Alice terminal:
+   ```bash
+   /connect <AI-Robot_public_key>
+   ```
+
+3. **Send message to AI-Robot**  
+
+   If you using `llama-cli`,
+   In Alice terminal:
+   ```bash
+   /ai <AI-Robot_public_key> DeepSeek-R1-Distill-Qwen-1.5B-GGUF hey
+   ```
+
+   If you using `ollama`,
+   In Alice terminal:
+   ```bash
+   /ai <AI-Robot_public_key> deepseek-r1:1.5b hey
    ```
     
 
