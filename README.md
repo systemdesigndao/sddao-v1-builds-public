@@ -158,20 +158,7 @@ cosign verify-blob \
 
 ## Verify file via `virustotal`
 
-### 0.0.2
-
-sha256 from file: `6e0f0d9eb4ae3155f124264b01e030775de86e44f124f191e3926a00c697ee49`  
-Checkout on [VirusTotal](https://www.virustotal.com/gui/file/6e0f0d9eb4ae3155f124264b01e030775de86e44f124f191e3926a00c697ee49)  
-
-### 0.0.3
-
-sha256 from file: `dd43404a13ef9cee569ed22e4509a2dbe4d36ccd6f7b2bffbc40173525405718`  
-Checkout on [VirusTotal](https://www.virustotal.com/gui/file/dd43404a13ef9cee569ed22e4509a2dbe4d36ccd6f7b2bffbc40173525405718)
-
-### 0.0.4
-
-sha256 from file: `e271e5cf752f572cc1c2f4d6436c78c9fafc42d397f525321a1472eb4b2576a9`  
-Checkout on [VirusTotal](https://www.virustotal.com/gui/file/e271e5cf752f572cc1c2f4d6436c78c9fafc42d397f525321a1472eb4b2576a9)
+✅ Download files only from this repo and verify yourself on VirusTotal.
 
 ## 📋 Available Commands
 
