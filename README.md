@@ -156,10 +156,6 @@ cosign verify-blob \
   sddao-p2p-0.0.2-aarch64
 ```
 
-## Verify file via `virustotal`
-
-✅ Download files only from this repo and verify yourself on VirusTotal.
-
 ## 📋 Available Commands
 
 Once your node is running, use these interactive commands:
