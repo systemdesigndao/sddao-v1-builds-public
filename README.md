@@ -23,7 +23,55 @@ Download `DeepSeek-R1-Distill-Qwen-1.5B-GGUF` [here](https://huggingface.co/lmst
 This project uses the following open-source libraries:
 
 - [`tonutils-go`](https://github.com/xssnick/tonutils-go) – Provides core TON networking primitives including ADNL, DHT, and RLDP, enabling true P2P connectivity and message delivery.
-- [`ollama`](https://github.com/ollama/ollama) – Local AI models provider; allows running AI agents and responding to prompts from peers over the network. 
+- [`ollama`](https://github.com/ollama/ollama) – Local AI models provider; `ollama` under the hood runs directly on user device with HTTP proxy. Peer-to-peer communication between nodes occurs over TON. 
+
+```mermaid
+flowchart TD
+    subgraph UserSide["Alice"]
+        U[TON P2P Node]
+    end
+
+    subgraph TONSide["Bob"]
+        TON_B[TON P2P Node]
+    end
+
+    subgraph OllamaSide["Ollama HTTP Proxy"]
+        OllamaHTTP[Ollama HTTP API]
+        ModelO[AI Model]
+    end
+
+    U -->|send prompt| TON_B
+    TON_B -->|HTTP request| OllamaHTTP
+    OllamaHTTP -->|loads weights| ModelO
+    ModelO -->|inference| OllamaHTTP
+    OllamaHTTP -->|HTTP response| TON_B
+    TON_B -->|response| U
+```
+
+- [`llama.cpp`](https://github.com/ggml-org/llama.cpp) – Another local AI models provider; `llama-cli` under the hood runs runs directly on user device without HTTP proxy, enabling agents to respond to peer prompts entirely locally. 
+
+```mermaid
+flowchart TD
+    subgraph UserSide["Alice"]
+        U[TON P2P Node]
+    end
+
+    subgraph TONSide["Bob"]
+        TON_B[TON P2P Node]
+    end
+
+    subgraph LlamaSide["llama-cli Direct"]
+        LlamaCpp[llama.cpp Engine]
+        ModelL[AI Model]
+    end
+
+    U -->|send prompt| TON_B
+    TON_B -->|direct call| LlamaCpp
+    LlamaCpp -->|loads weights| ModelL
+    ModelL -->|inference| LlamaCpp
+    LlamaCpp -->|direct output| TON_B
+    TON_B -->|response| U
+```
 
 ## ✨ Features
 
@@ -47,9 +95,13 @@ This project uses the following open-source libraries:
 
 Download TON Mainnet Config (https://ton.org/global-config.json) to `config.json` in directory with binary 
 
-### Install `ollama` (only 0.0.3)
+### Install `ollama` (0.0.3, 0.0.4)
 
 You need to install ollama cli and model e.g `deepseek-r1:1.5b`. Find how to install `ollama` [here](https://github.com/ollama/ollama).
+
+### Install `llama-cli` (0.0.4)
+
+Find how to install `llama-cli` [here](https://github.com/ggml-org/llama.cpp).
 
 ### Running Nodes
 
@@ -86,7 +138,7 @@ You need to install ollama cli and model e.g `deepseek-r1:1.5b`. Find how to ins
 ./sddao-p2p-0.0.3-aarch64 Bob <ip> <port>
 
 # Start third node (AI-Robot)
-./sddao-p2p-0.0.3-aarch64 AI-Robot <ip> <port> <model> # ollama || llama-cli
+./sddao-p2p-0.0.3-aarch64 AI-Robot <ip> <port> <ai_provider> # ollama || llama-cli
 ```
 
 
@@ -130,7 +182,7 @@ Once your node is running, use these interactive commands:
 | `/connect <key>` | Connect to peer via DHT using public key | `/connect a1b2c3d4...` |
 | `/msg <key> <text>` | Send message via RLDP | `/msg a1b2c3d4... Hello!` |
 | `/ollama <peer_key> <model> <prompt>` (0.0.3 only) | Send prompt to a local Ollama instance over TON | `/ollama a1b2c3d4... deepseek-r1:1.5b hey` |
-| `/ai <peer_key> <model> <prompt>` (0.0.4 only) | Send prompt to a local Ollama or llama-cli instance over TON | `/ai a1b2c3d4... deepseek-r1:1.5b hey` |
+| `/ai <peer_key> <model> <prompt>` (0.0.4 only) | Send prompt to a local Ollama or llama-cli instance over TON | `/ai a1b2c3d4... deepseek-r1:1.5b hey OR /ai a1b2c3d4... DeepSeek-R1-Distill-Qwen-1.5B-Q8_0.gguf hey` |
 | `/list` | Show connected peers | `/list` |
 | `/exit` | Exit the application | `/exit` |
 
