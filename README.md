@@ -76,6 +76,19 @@ You need to install ollama cli and model e.g `deepseek-r1:1.5b`. Find how to ins
 ./sddao-p2p-0.0.3-aarch64 AI-Robot <ip> <port>
 ```
 
+#### 0.0.4
+
+```bash
+# Start first node (Alice)
+./sddao-p2p-0.0.3-aarch64 Alice <ip> <port>
+
+# Start second node (Bob) 
+./sddao-p2p-0.0.3-aarch64 Bob <ip> <port>
+
+# Start third node (AI-Robot)
+./sddao-p2p-0.0.3-aarch64 AI-Robot <ip> <port> <model> # ollama || llama-cli
+```
+
 
 ## Verify builder email via `cosign`
 
@@ -103,7 +116,7 @@ Checkout on [VirusTotal](https://www.virustotal.com/gui/file/6e0f0d9eb4ae3155f12
 sha256 from file: `dd43404a13ef9cee569ed22e4509a2dbe4d36ccd6f7b2bffbc40173525405718`  
 Checkout on [VirusTotal](https://www.virustotal.com/gui/file/dd43404a13ef9cee569ed22e4509a2dbe4d36ccd6f7b2bffbc40173525405718)
 
-### 0.0.3
+### 0.0.4
 
 sha256 from file: `0971c3b68126f148844cbe10764c01be649c046ed0dc014b5013b6b072bd1d55`  
 Checkout on [VirusTotal](https://www.virustotal.com/gui/file/0971c3b68126f148844cbe10764c01be649c046ed0dc014b5013b6b072bd1d55)
