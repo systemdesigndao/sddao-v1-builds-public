@@ -6,4 +6,7 @@ This project uses the following third-party libraries:
 - Ollama (MIT License) – Integrated in version 0.0.3 for sending prompts to AI models over TON
   https://github.com/ollama/ollama
 
-This project is not affiliated with the authors of tonutils-go, ollama.
+- llama.cpp (MIT License) - Integrated in version 0.0.4 for sending prompts to AI models over TON
+  https://github.com/ggml-org/llama.cpp
+
+This project is not affiliated with the authors of tonutils-go, ollama, llama.cpp.
