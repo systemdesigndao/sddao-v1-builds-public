@@ -31,7 +31,7 @@ flowchart TD
         U[TON P2P Node]
     end
 
-    subgraph TONSide["Bob"]
+    subgraph TONSide["AI-Robot"]
         TON_B[TON P2P Node]
     end
 
@@ -125,11 +125,12 @@ Find how to install `llama-cli` [here](https://github.com/ggml-org/llama.cpp).
 ./sddao-p2p-0.0.3-aarch64 Bob <ip> <port>
 
 # Start third node (AI-Robot)
-./sddao-p2p-0.0.3-aarch64 AI-Robot <ip> <port>
+./sddao-p2p-0.0.3-aarch64 AI-Robot <ip> <port> # only AI-Robot name in this version will activate ollama
 ```
 
 #### 0.0.4
 
+By default here used `llama-cli`:
 ```bash
 # Start first node (Alice)
 ./sddao-p2p-0.0.3-aarch64 Alice <ip> <port>
@@ -137,10 +138,33 @@ Find how to install `llama-cli` [here](https://github.com/ggml-org/llama.cpp).
 # Start second node (Bob) 
 ./sddao-p2p-0.0.3-aarch64 Bob <ip> <port>
 
-# Start third node (AI-Robot)
-./sddao-p2p-0.0.3-aarch64 AI-Robot <ip> <port> <ai_provider> # ollama || llama-cli
+# Start third node (Cobb)
+./sddao-p2p-0.0.3-aarch64 Cobb <ip> <port>
 ```
 
+Then use `/ai` to ask from another peer local LLM (e.g `DeepSeek-R1-Distill-Qwen-1.5B-Q8_0.gguf`):
+```bash
+# Use peer public key
+/ai a1b2c3d4... DeepSeek-R1-Distill-Qwen-1.5B-Q8_0.gguf hey
+```
+
+How to run `ollama`:
+```bash
+# Start first node (Alice)
+./sddao-p2p-0.0.3-aarch64 Alice <ip> <port> ollama
+
+# Start second node (Bob) 
+./sddao-p2p-0.0.3-aarch64 Bob <ip> <port> ollama
+
+# Start third node (Cobb)
+./sddao-p2p-0.0.3-aarch64 Cobb <ip> <port> ollama
+```
+
+Then use `/ai` to ask from another peer local LLM (e.g `deepseek-r1:1.5b`):
+```bash
+# Use peer public key
+/ai a1b2c3d4... deepseek-r1:1.5b hey
+```
 
 ## Verify builder email via `cosign`
 
