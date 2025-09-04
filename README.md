@@ -6,17 +6,31 @@
 
 🎥 Watch video demo on [PeerList](https://peerlist.io/designervoid/project/sddao)
 
-## 🆕 What's New in 0.0.3
+## ✨ Features
 
-- **Ollama CLI integration** – you can now send prompts to a local Ollama over TON (`./sddao-p2p-0.0.3-aarch64 AI-Robot <ip> <port> ollama`)
-- New command: `/ollama <peer_key> <model> <prompt>`  
+🔒 **True P2P Communication** – Direct peer-to-peer messaging without central servers.
 
-## 🆕 What's New in 0.0.4
+📡 **Large Message Support** – Delivery of encrypted messages up to 10MB.
 
-Download `DeepSeek-R1-Distill-Qwen-1.5B-GGUF` [here](https://huggingface.co/lmstudio-community/DeepSeek-R1-Distill-Qwen-1.5B-GGUF)
+🔐 **End-to-End Encryption** – Messages secured with one-time ed25519 keys.
 
-- **llama-cli integration** – you can now send prompts to a model using llama-cli over TON (`./sddao-p2p-0.0.4-aarch64 AI-Robot <ip> <port> llama-cli`)
-- New command: `/ai <peer_key> <model> <prompt>`  
+⚙️ **Cross-Platform** – Data can be exchanged wirelessly between macOS and Android over Wi-Fi (see how it [works](https://peerlist.io/designervoid/project/sddao), this repo contains only the Linux build).
+
+👁️‍🗨️ **No tracking** – We’re not watching you.
+
+🤖 **Local LLM Support** – Available since 0.0.3 (Ollama) or 0.0.4 (llama.cpp) for peer-to-peer AI interactions.
+
+## 🗂 Versions
+
+| Version | Features |
+|---------|----------|
+| **0.0.1** | TON ADNL + DHT |
+→ initial public builds start's after **0.0.1**
+| **0.0.2** | TON ADNL + DHT + RLDP |
+| **0.0.3** | TON ADNL + DHT + RLDP + Ollama CLI integration |
+| **0.0.4** | TON ADNL + DHT + RLDP + Ollama CLI + llama.cpp integration |
+→ coming soon
+| **0.0.5** | TON ADNL + DHT + RLDP + Ollama + llama.cpp + libp2p (Web Node support) |
 
 ## Dependencies
 
@@ -72,18 +86,6 @@ flowchart TD
     LlamaCpp -->|direct output| TON_B
     TON_B -->|response| U
 ```
-
-## ✨ Features
-
-🔒 True P2P Communication – Direct peer-to-peer messaging without central servers.
-
-📡 Large Message Support – Delivery of encrypted messages up to 10MB.
-
-🔐 End-to-End Encryption – Messages secured with one-time ed25519 keys.
-
-⚙️ Cross-Platform – Data can be exchanged wirelessly between macOS and Android over Wi-Fi (see how it [works](https://peerlist.io/designervoid/project/sddao), this repo contains only the Linux build).
-
-👁️‍🗨️ No tracking – We’re not watching you.
 
 ## 🚀 Quick Start
 
