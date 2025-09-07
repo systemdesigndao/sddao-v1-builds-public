@@ -1,5 +1,5 @@
 import './wasm_exec.js';
-import React, { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { noise } from '@chainsafe/libp2p-noise';
 import { yamux } from '@chainsafe/libp2p-yamux';
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2';
@@ -293,7 +293,9 @@ const App = () => {
     }
 
     try {
-      // Create a new stream for each message (like in original)
+      // Create a new stream for each message (like in original Vanilla implementation)
+      // Vanilla implementation is internal basic PoC app
+      // Implementation of stream protocol should be improved also
       const stream = await globalNode.dialProtocol(currentRelayAddr, CHAT_PROTOCOL);
       
       // Send message using new stream
@@ -398,7 +400,7 @@ const App = () => {
     if (renderedWasm) return;
     renderedWasm = true;
     const go = new Go();
-    WebAssembly.instantiateStreaming(fetch('./keys.wasm'), go.importObject).then((result) => {
+    WebAssembly.instantiateStreaming(fetch('/keys.wasm'), go.importObject).then((result) => {
       go.run(result.instance);
       console.info('WASM initialized successfully');
       if (window.generateKeys) {
