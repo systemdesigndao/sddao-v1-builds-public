@@ -29,7 +29,6 @@
 | **0.0.2** | TON ADNL + DHT + RLDP |
 | **0.0.3** | TON ADNL + DHT + RLDP + Ollama CLI integration |
 | **0.0.4** | TON ADNL + DHT + RLDP + Ollama CLI + llama.cpp integration |
-→ coming soon
 | **0.0.5** | TON ADNL + DHT + RLDP + Ollama + llama.cpp + libp2p (Web Node support) |
 
 ## Dependencies
@@ -182,6 +181,14 @@ cosign verify-blob \
   sddao-p2p-0.0.2-aarch64
 ```
 
+#### 0.0.5
+
+##### Run bridge
+
+`sddao-p2p-0.0.5_ton_libp2p_web-aarch64 bridge <ip> <port>`
+
+Running peer, messages, AI as in previous versions.
+
 ## 📋 Available Commands
 
 Once your node is running, use these interactive commands:
@@ -191,7 +198,7 @@ Once your node is running, use these interactive commands:
 | `/connect <key>` | Connect to peer via DHT using public key | `/connect a1b2c3d4...` |
 | `/msg <key> <text>` | Send message via RLDP | `/msg a1b2c3d4... Hello!` |
 | `/ollama <peer_key> <model> <prompt>` (0.0.3 only) | Send prompt to a local Ollama instance over TON | `/ollama a1b2c3d4... deepseek-r1:1.5b hey` |
-| `/ai <peer_key> <model> <prompt>` (0.0.4 only) | Send prompt to a local Ollama or llama-cli instance over TON | `/ai a1b2c3d4... deepseek-r1:1.5b hey OR /ai a1b2c3d4... DeepSeek-R1-Distill-Qwen-1.5B-Q8_0.gguf hey` |
+| `/ai <peer_key> <model> <prompt>` (0.0.4, 0.0.5 versions) | Send prompt to a local Ollama or llama-cli instance over TON | `/ai a1b2c3d4... deepseek-r1:1.5b hey OR /ai a1b2c3d4... DeepSeek-R1-Distill-Qwen-1.5B-Q8_0.gguf hey` |
 | `/list` | Show connected peers | `/list` |
 | `/exit` | Exit the application | `/exit` |
 
