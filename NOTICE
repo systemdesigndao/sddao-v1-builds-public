@@ -1,12 +1,16 @@
 This project uses the following third-party libraries:
 
-- tonutils-go (Apache License 2.0) – used for core TON networking (ADNL, RLDP, DHT)
+- tonutils-go (Apache 2.0 License) – Core The Open Network (TON) primitives ADNL, RLDP, DHT for TON P2P CLI Node and TON P2P Bridge Node.
   https://github.com/xssnick/tonutils-go
 
-- Ollama (MIT License) – Integrated in version 0.0.3 for sending prompts to AI models over TON
+- Ollama (MIT License) – Integrated in version 0.0.3 for sending prompts to AI models over TON P2P CLI Node
   https://github.com/ollama/ollama
 
-- llama.cpp (MIT License) - Integrated in version 0.0.4 for sending prompts to AI models over TON
+- llama.cpp (MIT License) - Integrated in version 0.0.4 for sending prompts to AI models over TON P2P CLI Node
   https://github.com/ggml-org/llama.cpp
 
-This project is not affiliated with the authors of tonutils-go, ollama, llama.cpp.
+- go-libp2p (MIT License), js-libp2p (Apache 2.0 License) – Integrated in v0.0.5 to connect the TON P2P Bridge Node with the libp2p Web Node
+  https://github.com/libp2p/go-libp2p
+  https://github.com/libp2p/js-libp2p
+
+This project is not affiliated with the authors of tonutils-go, ollama, llama.cpp, libp2p (go-libp2p, js-libp2p).

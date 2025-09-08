@@ -35,8 +35,8 @@
 
 This project uses the following open-source libraries:
 
-- [`tonutils-go`](https://github.com/xssnick/tonutils-go) – Provides core TON networking primitives including ADNL, DHT, and RLDP, enabling true P2P connectivity and message delivery.
-- [`ollama`](https://github.com/ollama/ollama) – Local AI models provider; `ollama` under the hood runs directly on user device with HTTP proxy. Peer-to-peer communication between nodes occurs over TON. 
+- [`tonutils-go`](https://github.com/xssnick/tonutils-go) – Provides core The Open Network (TON) primitives (ADNL, DHT, RLDP), serving as the base layer for the TON P2P CLI Node and TON P2P Bridge Node, enabling true P2P connectivity and reliable message delivery.
+- [`ollama`](https://github.com/ollama/ollama) – Local AI models provider in TON P2P CLI Node; `ollama` under the hood runs directly on user device with HTTP proxy. Peer-to-peer communication between nodes occurs over TON. 
 
 ```mermaid
 flowchart TD
@@ -61,7 +61,7 @@ flowchart TD
     TON_B -->|response| U
 ```
 
-- [`llama.cpp`](https://github.com/ggml-org/llama.cpp) – Another local AI models provider; `llama-cli` under the hood runs directly on user device without HTTP proxy, enabling agents to respond to peer prompts entirely locally. 
+- [`llama.cpp`](https://github.com/ggml-org/llama.cpp) – Another local AI models provider in TON P2P CLI Node; `llama-cli` under the hood runs directly on user device without HTTP proxy, enabling agents to respond to peer prompts entirely locally. 
 
 ```mermaid
 flowchart TD
@@ -85,6 +85,8 @@ flowchart TD
     LlamaCpp -->|direct output| TON_B
     TON_B -->|response| U
 ```
+
+- [`go-libp2p`](https://github.com/libp2p/go-libp2p), [`js-libp2p`](https://github.com/libp2p/js-libp2p) – Provides transport, private peer discovery, and secure communication channels between libp2p Web Node and TON P2P Bridge Node.
 
 ## 🚀 Quick Start
 
