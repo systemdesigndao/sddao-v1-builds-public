@@ -18,8 +18,7 @@ import {
   NetworkPanel, 
   ChatPanel 
 } from './components';
-
-const CHAT_PROTOCOL = '/libp2p/sddao/chat/1.0.0';
+import { CHAT_PROTOCOL } from './constants';
 
 let persistentStream = null; // Global persistent stream
 let isListening = false; // Global listening state
@@ -75,23 +74,7 @@ const startAutoListening = async (appendOutput) => {
         // For other errors, continue reading
         continue;
       }
-    }
-    
-    // If we get here, the stream ended - try to restart it
-    if (isListening && isConnected) {
-      appendOutput('🔄 Stream ended, attempting to restart...');
-      // Reset the stream reference
-      persistentStream = null;
-      
-      // Try to restart the stream
-      setTimeout(() => {
-        if (isListening && isConnected && globalNode) {
-          appendOutput('🔄 Restarting auto-listening...');
-          startAutoListening(appendOutput);
-        }
-      }, 1000);
-    }
-    
+    }    
   } catch (err) {
     appendOutput(`❌ Auto-listening failed: ${err.message}`);
     isListening = false;

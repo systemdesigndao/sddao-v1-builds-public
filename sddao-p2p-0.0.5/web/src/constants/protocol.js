@@ -1,0 +1,1 @@
+export const CHAT_PROTOCOL = '/libp2p/sddao/chat/1.0.0';

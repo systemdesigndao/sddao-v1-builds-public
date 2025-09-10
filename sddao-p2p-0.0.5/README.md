@@ -10,7 +10,7 @@
 
 # Run web
 
-`pnpm i && pnpm run dev` or build standalone app using `Neutralino.js` or something like that
+`pnpm i`, `pnpm run dev` or `pnpm run build && pnpm run preview` or build standalone app using `Neutralino.js` or something like that
 
 # Connect via web
 

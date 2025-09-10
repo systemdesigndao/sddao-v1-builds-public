@@ -1,5 +1,5 @@
-import React, { useRef, useEffect } from 'react';
-import useStore from '../store';
+import { useRef, useEffect } from 'react';
+import useStore from '@/store';
 import Message from './Message';
 
 const ChatPanel = ({ onSendMessage, onKeyPress }) => {

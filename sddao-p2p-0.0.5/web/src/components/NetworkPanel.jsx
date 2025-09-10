@@ -1,4 +1,4 @@
-import useStore from '../store';
+import useStore from '@/store';
 
 const NetworkPanel = () => {
   const { connections, multiaddrs } = useStore();
