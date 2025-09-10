@@ -54,6 +54,31 @@ const useStore = create((set) => ({
   // ==== connection state ====
   isConnectedState: false,
   setIsConnectedState: (val) => set({ isConnectedState: val }),
+
+  // ==== global state ====
+  persistentStream: null,
+  setPersistentStream: (stream) => set({ persistentStream: stream }),
+
+  isListening: false,
+  setIsListening: (val) => set({ isListening: val }),
+
+  globalNode: null,
+  setGlobalNode: (node) => set({ globalNode: node }),
+
+  isConnected: false,
+  setIsConnected: (val) => set({ isConnected: val }),
+
+  currentRelayAddr: null,
+  setCurrentRelayAddr: (addr) => set({ currentRelayAddr: addr }),
+
+  isConnecting: false,
+  setIsConnecting: (val) => set({ isConnecting: val }),
+
+  renderedNode: false,
+  setRenderedNode: (val) => set({ renderedNode: val }),
+
+  renderedWasm: false,
+  setRenderedWasm: (val) => set({ renderedWasm: val }),
 }));
 
 export default useStore;
