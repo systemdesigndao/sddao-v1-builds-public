@@ -14,6 +14,72 @@ import { CHAT_PROTOCOL } from '@/constants';
 class LibP2PManager {
   constructor() {}
 
+  // Process and append output messages
+  appendOutput(line) {
+    try {
+      const query = JSON.parse(line);
+      if (query.type === 'welcome') {
+        this.appendOutput(`🌐 ${query.message} (ID: ${query.libp2p_pub_key})`);
+        return;
+      }
+      if (query.type === 'ton_message') {
+        const messageData = {
+          text: query.message,
+          isAnotherUserMessage: true,
+          timestamp: Date.now()
+        };
+        
+        const { setOutput } = useStore.getState();
+        setOutput(prev => [...prev, messageData]);
+        return;
+      }
+      if (query.type === 'libp2p_message') {
+        const messageData = {
+          text: query.message,
+          isAnotherUserMessage: true,
+          timestamp: Date.now()
+        };
+        
+        const { setOutput } = useStore.getState();
+        setOutput(prev => [...prev, messageData]);
+        return;
+      }
+      if (query.type === 'ready_for_messages') {
+        const messageData = {
+          text: `📡 ${query.message}`,
+          isAnotherUserMessage: false,
+          timestamp: Date.now()
+        };
+        
+        const { setOutput } = useStore.getState();
+        setOutput(prev => [...prev, messageData]);
+        return;
+      }
+      if (query.type === 'command_response') {
+        const messageData = {
+          text: `📋 Command response: ${query.response}`,
+          isAnotherUserMessage: false,
+          timestamp: Date.now()
+        };
+        
+        const { setOutput } = useStore.getState();
+        setOutput(prev => [...prev, messageData]);
+        return;
+      }
+    } catch (err) {
+      // Skip catching error
+    }
+    
+    const messageData = {
+      text: line,
+      isAnotherUserMessage: false,
+      timestamp: Date.now()
+    };
+    
+    const { setOutput } = useStore.getState();
+    setOutput(prev => [...prev, messageData]);
+  }
+
   // Initialize libp2p node
   async initializeNode(appendOutput) {
     const { globalNode, setGlobalNode, renderedNode, setRenderedNode } = useStore.getState();
@@ -51,76 +117,20 @@ class LibP2PManager {
       // This replaces startAutoListening for TON Bridge
       node.handle(CHAT_PROTOCOL, async ({ stream }) => {
         const chatStream = byteStream(stream);
-        let isActive = true;
 
-        // Handle single message processing to avoid memory leaks
-        const processMessage = async () => {
+        // Process single message to avoid memory leaks
+        const processSingleMessage = async () => {
           try {
             const buf = await chatStream.read();
-            if (!buf || !isActive) {
-              return false; // End of stream or inactive
+            if (!buf) {
+              return false; // No data
             }
-            
             const message = toString(buf.subarray());
+            
             console.log('📥 Received message in node.handle:', message);
             
-            // Try to parse JSON response first
-            try {
-              const jsonResponse = JSON.parse(message);
-              if (jsonResponse.type === 'welcome') {
-                appendOutput(`🌐 ${jsonResponse.message} (ID: ${jsonResponse.libp2p_pub_key || jsonResponse.client_id})`);
-              } else if (jsonResponse.type === 'libp2p_message') {
-                appendOutput(`💬 libp2p Message: ${jsonResponse.message}`);
-              } else if (jsonResponse.type === 'ton_message') {
-                appendOutput(`💬 TON Message: ${jsonResponse.message}`);
-              } else if (jsonResponse.type === 'ready_for_messages') {
-                appendOutput(`📡 ${jsonResponse.message}`);
-              } else if (jsonResponse.type === 'command_response') {
-                appendOutput(`📋 Command response: ${jsonResponse.response}`);
-              }
-            } catch (parseErr) {
-              // Handle non-JSON messages from both TON and libp2p Bridge
-              if (message.includes('libp2p Message from peer:')) {
-                appendOutput(`💬 ${message}`);
-              } else if (message.includes('TON Message from peer:')) {
-                appendOutput(`💬 ${message}`);
-              } else if (message.includes('Connected to libp2p Bridge')) {
-                appendOutput(`🌐 ${message}`);
-              } else if (message.includes('Connected to TON Bridge')) {
-                appendOutput(`🌐 ${message}`);
-              } else if (message.includes('Command response:')) {
-                appendOutput(`📋 ${message}`);
-              } else if (message.includes('libp2p node started')) {
-                appendOutput(`📡 ${message}`);
-              } else if (message.includes('TON node started')) {
-                appendOutput(`📡 ${message}`);
-              } else if (message.includes('success: connected via libp2p node')) {
-                appendOutput(`✅ ${message}`);
-              } else if (message.includes('success: connected via TON node')) {
-                appendOutput(`✅ ${message}`);
-              } else if (message.includes('success: message sent via libp2p node')) {
-                appendOutput(`✅ ${message}`);
-              } else if (message.includes('success: message sent via TON node')) {
-                appendOutput(`✅ ${message}`);
-              } else if (message.includes('Failed to connect via') || message.includes('Failed to send message via')) {
-                appendOutput(`⚠️ ${message}`);
-                appendOutput(`💡 Tip: You need another client with a different public key to test P2P communication`);
-              } else if (message.includes('peer not found by public key')) {
-                appendOutput(`⚠️ Peer not found: ${message}`);
-                appendOutput(`💡 This is expected - you're trying to connect to yourself!`);
-              } else if (message.includes('not found via mDNS discovery')) {
-                appendOutput(`⚠️ mDNS Discovery failed: ${message}`);
-                appendOutput(`💡 This is normal in browsers - mDNS discovery has limitations`);
-              } else if (message.includes('error:')) {
-                appendOutput(`❌ ${message}`);
-              } else if (message.includes('command=start')) {
-                // Hide command=start messages from chat
-                console.log('Hidden command=start message:', message);
-              } else {
-                // Log any other messages for debugging
-                appendOutput(`📨 Received: ${message.trim()}`);
-              }
-            }
+            // Process message using simple appendOutput function
+            this.appendOutput(message);
             return true; // Continue processing
           } catch (err) {
             if (err.message === 'stream ended') {
@@ -131,24 +141,19 @@ class LibP2PManager {
           }
         };
 
-        // Process messages one by one to avoid memory leaks
+        // Process messages one by one to avoid blocking
         try {
-          while (isActive) {
-            const shouldContinue = await processMessage();
+          while (true) {
+            const shouldContinue = await processSingleMessage();
             if (!shouldContinue) {
               break;
             }
           }
         } catch (err) {
           console.warn('Stream handler error:', err.message);
-        } finally {
-          isActive = false;
-          try {
-            stream.close();
-          } catch (err) {
-            // Stream already closed
-          }
         }
+        
+        console.log('📡 Stream processing completed');
       });
 
       // Set up event listeners
