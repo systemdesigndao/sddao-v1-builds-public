@@ -26,3 +26,10 @@ Enter address from bridge, press `Generate keys` button, TON shadow node will au
 # Compatibility
 
 0.0.6 libp2p won't work with 0.0.2 ton cli version e.g
+
+# Changelog
+
+* Improved frontend streaming – now using libp2p `node.handle` instead of manual stream control.
+* Minor updates across TON + libp2p + web integration (compatibility with `node.handle`).
+* Added support for pure libp2p usage.
+* Web frontend now seamlessly supports both versions across each backend module.
