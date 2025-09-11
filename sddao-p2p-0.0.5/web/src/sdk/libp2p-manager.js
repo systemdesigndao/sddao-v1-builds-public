@@ -47,7 +47,8 @@ class LibP2PManager {
         }
       });
 
-      // Add protocol handler for libp2p Bridge
+      // Add protocol handler for both TON Bridge and libp2p Bridge
+      // This replaces startAutoListening for TON Bridge
       node.handle(CHAT_PROTOCOL, async ({ stream }) => {
         const chatStream = byteStream(stream);
 
@@ -57,46 +58,62 @@ class LibP2PManager {
             const message = toString(buf.subarray());
             
             console.log('📥 Received message in node.handle:', message);
-            appendOutput(`📥 Received message: '${message}'`);
             
-            // Try to parse JSON response
+            // Try to parse JSON response first
             try {
               const jsonResponse = JSON.parse(message);
-              if (jsonResponse.type === 'libp2p_message') {
+              if (jsonResponse.type === 'welcome') {
+                appendOutput(`🌐 ${jsonResponse.message} (ID: ${jsonResponse.libp2p_pub_key || jsonResponse.client_id})`);
+              } else if (jsonResponse.type === 'libp2p_message') {
                 appendOutput(`💬 libp2p Message: ${jsonResponse.message}`);
+              } else if (jsonResponse.type === 'ton_message') {
+                appendOutput(`💬 TON Message: ${jsonResponse.message}`);
               } else if (jsonResponse.type === 'ready_for_messages') {
                 appendOutput(`📡 ${jsonResponse.message}`);
-              } else if (jsonResponse.type === 'welcome') {
-                appendOutput(`🌐 ${jsonResponse.message} (ID: ${jsonResponse.client_id})`);
+              } else if (jsonResponse.type === 'command_response') {
+                appendOutput(`📋 Command response: ${jsonResponse.response}`);
               }
             } catch (parseErr) {
-              // Check if it's a libp2p message from peer
+              // Handle non-JSON messages from both TON and libp2p Bridge
               if (message.includes('libp2p Message from peer:')) {
                 appendOutput(`💬 ${message}`);
+              } else if (message.includes('TON Message from peer:')) {
+                appendOutput(`💬 ${message}`);
               } else if (message.includes('Connected to libp2p Bridge')) {
+                appendOutput(`🌐 ${message}`);
+              } else if (message.includes('Connected to TON Bridge')) {
                 appendOutput(`🌐 ${message}`);
               } else if (message.includes('Command response:')) {
                 appendOutput(`📋 ${message}`);
               } else if (message.includes('libp2p node started')) {
                 appendOutput(`📡 ${message}`);
+              } else if (message.includes('TON node started')) {
+                appendOutput(`📡 ${message}`);
               } else if (message.includes('success: connected via libp2p node')) {
+                appendOutput(`✅ ${message}`);
+              } else if (message.includes('success: connected via TON node')) {
                 appendOutput(`✅ ${message}`);
               } else if (message.includes('success: message sent via libp2p node')) {
                 appendOutput(`✅ ${message}`);
+              } else if (message.includes('success: message sent via TON node')) {
+                appendOutput(`✅ ${message}`);
               } else if (message.includes('Failed to connect via') || message.includes('Failed to send message via')) {
                 appendOutput(`⚠️ ${message}`);
+                appendOutput(`💡 Tip: You need another client with a different public key to test P2P communication`);
               } else if (message.includes('peer not found by public key')) {
-                appendOutput(`⚠️ ${message}`);
+                appendOutput(`⚠️ Peer not found: ${message}`);
+                appendOutput(`💡 This is expected - you're trying to connect to yourself!`);
               } else if (message.includes('not found via mDNS discovery')) {
-                appendOutput(`⚠️ ${message}`);
+                appendOutput(`⚠️ mDNS Discovery failed: ${message}`);
+                appendOutput(`💡 This is normal in browsers - mDNS discovery has limitations`);
               } else if (message.includes('error:')) {
                 appendOutput(`❌ ${message}`);
               } else if (message.includes('command=start')) {
                 // Hide command=start messages from chat
                 console.log('Hidden command=start message:', message);
               } else {
-                // Regular message
-                appendOutput(`📨 ${message}`);
+                // Log any other messages for debugging
+                appendOutput(`📨 Received: ${message.trim()}`);
               }
             }
           }
@@ -199,8 +216,8 @@ class LibP2PManager {
       // Add circuit relay address to listening addresses
       this.addCircuitRelayAddress(globalNode, appendOutput);
       
-      // Start auto-listening automatically
-      this.startAutoListening(appendOutput);
+      // node.handle() now processes all messages for both TON and libp2p Bridge
+      // No need for startAutoListening anymore
       
     } catch (err) {
       appendOutput(`❌ Connection failed: ${err.message}`);
@@ -210,7 +227,7 @@ class LibP2PManager {
     }
   }
 
-  // Start auto-listening for messages
+  // Start auto-listening for TON Bridge messages
   async startAutoListening(appendOutput) {
     const { 
       isConnected, 
@@ -225,38 +242,26 @@ class LibP2PManager {
     }
     
     try {
-      appendOutput('🎧 Starting auto-listening...');
+      appendOutput('🎧 Starting auto-listening for TON Bridge...');
       
-      // Determine bridge type for logging
-      // TON Bridge uses port 8083, libp2p Bridge uses port 8082
-      const isLibP2PBridge = currentRelayAddr.toString().includes(':8082/');
-      const bridgeType = isLibP2PBridge ? 'libp2p Bridge' : 'TON Bridge';
-      
-      appendOutput(`✅ Auto-listening started! Waiting for messages from ${bridgeType}...`);
-      
-      setIsListening(true);
-      
-      // For libp2p Bridge, we don't need a persistent stream
-      // Messages are handled by the node.handle(CHAT_PROTOCOL) in initializeNode
-      if (isLibP2PBridge) {
-        appendOutput('🔄 libp2p Bridge uses event-driven message handling');
-        return;
-      }
-      
-      // For TON Bridge, open a persistent stream
+      // Open a persistent stream to the TON Bridge using the chat protocol
       const persistentStream = await globalNode.dialProtocol(currentRelayAddr, CHAT_PROTOCOL, {
         signal: AbortSignal.timeout(10000)
       });
       
+      setIsListening(true);
       setPersistentStream(persistentStream);
       
-      // Read messages in a loop for TON Bridge
+      appendOutput('✅ Auto-listening started! Waiting for messages from TON Bridge...');
+      
+      // Read messages in a loop without closing the stream
       const reader = byteStream(persistentStream);
       
       while (useStore.getState().isListening && useStore.getState().isConnected && persistentStream) {
         try {
           const response = await reader.read();
           if (!response) {
+            // No data but stream might still be active, continue
             continue;
           }
           
@@ -268,12 +273,15 @@ class LibP2PManager {
         } catch (readErr) {
           if (readErr.message !== 'stream ended' && useStore.getState().isListening) {
             appendOutput(`⚠️ Stream error: ${readErr.message}`);
+            // Don't break the loop, just continue reading
             continue;
           }
+          // Only break if stream actually ended
           if (readErr.message === 'stream ended') {
             appendOutput('⚠️ Stream ended, will attempt to restart');
             break;
           }
+          // For other errors, continue reading
           continue;
         }
       }    
@@ -321,132 +329,16 @@ class LibP2PManager {
     appendOutput(`✅ Added circuit relay address to listening addresses`);
   }
 
-  // Handle libp2p Bridge messages
-  static handleLibP2PMessage(responseText, appendOutput) {
-    console.log('🔍 Processing libp2p message:', responseText);
-    
-    // Handle different types of messages from libp2p Bridge
-    if (responseText.includes('libp2p Message from peer:')) {
-      console.log('✅ Found libp2p message from peer');
-      appendOutput(`💬 ${responseText.trim()}`);
-    } else if (responseText.includes('Connected to libp2p Bridge')) {
-      console.log('✅ Found connection message');
-      appendOutput(`🌐 ${responseText.trim()}`);
-    } else if (responseText.includes('Command response:')) {
-      console.log('✅ Found command response');
-      appendOutput(`📋 ${responseText.trim()}`);
-    } else if (responseText.includes('libp2p node started. Ready to receive')) {
-      console.log('✅ Found node started message');
-      appendOutput(`📡 ${responseText.trim()}`);
-    } else if (responseText.includes('libp2p node started successfully')) {
-      console.log('✅ Found node started successfully message');
-      appendOutput(`📡 ${responseText.trim()}`);
-    } else if (responseText.includes('"type":"command_response"')) {
-      // Parse JSON response
-      try {
-        const responseData = JSON.parse(responseText);
-        if (responseData.type === 'command_response') {
-          appendOutput(`📋 Command response: ${responseData.response}`);
-          
-          // Check if this was a successful connect command
-          if (responseData.command && responseData.command.startsWith('connect=') && 
-              responseData.response && responseData.response.includes('success: connected')) {
-            appendOutput('✅ Подключение установлено успешно');
-          }
-        }
-      } catch (parseErr) {
-        appendOutput(`📋 Raw response: ${responseText.trim()}`);
-      }
-    } else if (responseText.includes('"type":"ready_for_messages"')) {
-      appendOutput(`📡 ${responseText.trim()}`);
-    } else if (responseText.includes('success: connected via libp2p node')) {
-      appendOutput(`✅ ${responseText.trim()}`);
-    } else if (responseText.includes('success: message sent via libp2p node')) {
-      appendOutput(`✅ ${responseText.trim()}`);
-    } else if (responseText.includes('Failed to connect via') || responseText.includes('Failed to send message via')) {
-      appendOutput(`⚠️ ${responseText.trim()}`);
-      appendOutput(`💡 Tip: You need another client with a different public key to test P2P communication`);
-      appendOutput(`💡 Open another browser tab and generate different keys, then use that public key to connect`);
-      appendOutput(`💡 Make sure both clients are connected to the same libp2p Bridge`);
-    } else if (responseText.includes('peer not found by public key')) {
-      appendOutput(`⚠️ Peer not found: ${responseText.trim()}`);
-      appendOutput(`💡 This is expected - you're trying to connect to yourself!`);
-      appendOutput(`💡 To test P2P: open another browser tab, generate different keys, and use that public key`);
-      appendOutput(`💡 Both clients must be connected to the same libp2p Bridge`);
-    } else if (responseText.includes('not found via mDNS discovery')) {
-      appendOutput(`⚠️ mDNS Discovery failed: ${responseText.trim()}`);
-      appendOutput(`💡 This is normal in browsers - mDNS discovery has limitations`);
-      appendOutput(`💡 Make sure both clients are connected to the same libp2p Bridge`);
-      appendOutput(`💡 The bridge will handle peer discovery for you`);
-    } else if (responseText.includes('error:')) {
-      appendOutput(`❌ ${responseText.trim()}`);
-    } else if (responseText.includes('command=start')) {
-      // Hide command=start messages from chat
-      console.log('Hidden command=start message:', responseText.trim());
-    } else {
-      // Log any other messages for debugging
-      appendOutput(`📨 Received: ${responseText.trim()}`);
-    }
-  }
-
-  // Create new stream for libp2p Bridge (Yamux multiplexing)
-  async createNewStream() {
-    const { globalNode, isConnected, currentRelayAddr } = useStore.getState();
-    
-    if (!globalNode || !isConnected) {
-      throw new Error('Not connected to libp2p Bridge');
-    }
-    
-    try {
-      // Create new stream using existing connection (Yamux)
-      const newStream = await globalNode.dialProtocol(currentRelayAddr, CHAT_PROTOCOL, {
-        signal: AbortSignal.timeout(10000)
-      });
-      
-      // Setup stream handler
-      this.setupStreamHandler(newStream);
-      
-      return newStream;
-    } catch (err) {
-      throw new Error(`Failed to create new Yamux stream: ${err.message}`);
-    }
-  }
-
-  // Setup stream handler for new streams
-  setupStreamHandler(stream) {
-    const reader = byteStream(stream);
-    
-    // Read messages from stream
-    const readMessages = async () => {
-      try {
-        while (stream && !stream.closed) {
-          const response = await reader.read();
-          if (!response) continue;
-          
-          const responseText = toString(response.subarray());
-          // Messages are handled by node.handle(CHAT_PROTOCOL)
-          console.log('Stream message:', responseText);
-        }
-      } catch (err) {
-        if (err.message !== 'stream ended') {
-          console.error('Yamux stream error:', err);
-        }
-      }
-    };
-    
-    // Start reading in background
-    readMessages();
-  }
-
   // Send start command to libp2p Bridge
   async sendStartCommand(privateKey, publicKey, appendOutput) {
     try {
       const startCommand = `command=start&priv_key=${privateKey}&pub_key=${publicKey}`;
       
-      // Create new stream and send command
-      const newStream = await this.createNewStream();
+      // Send command using new stream
+      const { globalNode, currentRelayAddr } = useStore.getState();
+      const stream = await globalNode.dialProtocol(currentRelayAddr, CHAT_PROTOCOL);
       const commandBytes = fromString(startCommand + '\n');
-      await newStream.sink([commandBytes]);
+      await stream.sink([commandBytes]);
       
       appendOutput('✅ Command=start sent successfully to libp2p Bridge');
       appendOutput('🔄 libp2p Bridge will initialize with your keys');
