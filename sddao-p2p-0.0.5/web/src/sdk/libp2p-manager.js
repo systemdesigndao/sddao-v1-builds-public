@@ -14,72 +14,6 @@ import { CHAT_PROTOCOL } from '@/constants';
 class LibP2PManager {
   constructor() {}
 
-  // Process and append output messages
-  appendOutput(line) {
-    try {
-      const query = JSON.parse(line);
-      if (query.type === 'welcome') {
-        this.appendOutput(`🌐 ${query.message} (ID: ${query.libp2p_pub_key})`);
-        return;
-      }
-      if (query.type === 'ton_message') {
-        const messageData = {
-          text: query.message,
-          isAnotherUserMessage: true,
-          timestamp: Date.now()
-        };
-        
-        const { setOutput } = useStore.getState();
-        setOutput(prev => [...prev, messageData]);
-        return;
-      }
-      if (query.type === 'libp2p_message') {
-        const messageData = {
-          text: query.message,
-          isAnotherUserMessage: true,
-          timestamp: Date.now()
-        };
-        
-        const { setOutput } = useStore.getState();
-        setOutput(prev => [...prev, messageData]);
-        return;
-      }
-      if (query.type === 'ready_for_messages') {
-        const messageData = {
-          text: `📡 ${query.message}`,
-          isAnotherUserMessage: false,
-          timestamp: Date.now()
-        };
-        
-        const { setOutput } = useStore.getState();
-        setOutput(prev => [...prev, messageData]);
-        return;
-      }
-      if (query.type === 'command_response') {
-        const messageData = {
-          text: `📋 Command response: ${query.response}`,
-          isAnotherUserMessage: false,
-          timestamp: Date.now()
-        };
-        
-        const { setOutput } = useStore.getState();
-        setOutput(prev => [...prev, messageData]);
-        return;
-      }
-    } catch (err) {
-      // Skip catching error
-    }
-    
-    const messageData = {
-      text: line,
-      isAnotherUserMessage: false,
-      timestamp: Date.now()
-    };
-    
-    const { setOutput } = useStore.getState();
-    setOutput(prev => [...prev, messageData]);
-  }
-
   // Initialize libp2p node
   async initializeNode(appendOutput) {
     const { globalNode, setGlobalNode, renderedNode, setRenderedNode } = useStore.getState();
@@ -111,49 +45,6 @@ class LibP2PManager {
           identify: identify(),
           identifyPush: identifyPush()
         }
-      });
-
-      // Add protocol handler for both TON Bridge and libp2p Bridge
-      // This replaces startAutoListening for TON Bridge
-      node.handle(CHAT_PROTOCOL, async ({ stream }) => {
-        const chatStream = byteStream(stream);
-
-        // Process single message to avoid memory leaks
-        const processSingleMessage = async () => {
-          try {
-            const buf = await chatStream.read();
-            if (!buf) {
-              return false; // No data
-            }
-            const message = toString(buf.subarray());
-            
-            console.log('📥 Received message in node.handle:', message);
-            
-            // Process message using simple appendOutput function
-            this.appendOutput(message);
-            return true; // Continue processing
-          } catch (err) {
-            if (err.message === 'stream ended') {
-              return false; // End of stream
-            }
-            console.warn('Message processing error:', err.message);
-            return false; // Stop processing on error
-          }
-        };
-
-        // Process messages one by one to avoid blocking
-        try {
-          while (true) {
-            const shouldContinue = await processSingleMessage();
-            if (!shouldContinue) {
-              break;
-            }
-          }
-        } catch (err) {
-          console.warn('Stream handler error:', err.message);
-        }
-        
-        console.log('📡 Stream processing completed');
       });
 
       // Set up event listeners
@@ -244,8 +135,8 @@ class LibP2PManager {
       // Add circuit relay address to listening addresses
       this.addCircuitRelayAddress(globalNode, appendOutput);
       
-      // node.handle() now processes all messages for both TON and libp2p Bridge
-      // No need for startAutoListening anymore
+      // Start auto-listening automatically
+      this.startAutoListening(appendOutput);
       
     } catch (err) {
       appendOutput(`❌ Connection failed: ${err.message}`);
@@ -255,7 +146,7 @@ class LibP2PManager {
     }
   }
 
-  // Start auto-listening for TON Bridge messages
+  // Start auto-listening for messages
   async startAutoListening(appendOutput) {
     const { 
       isConnected, 
@@ -270,7 +161,7 @@ class LibP2PManager {
     }
     
     try {
-      appendOutput('🎧 Starting auto-listening for TON Bridge...');
+      appendOutput('🎧 Starting auto-listening...');
       
       // Open a persistent stream to the TON Bridge using the chat protocol
       const persistentStream = await globalNode.dialProtocol(currentRelayAddr, CHAT_PROTOCOL, {
@@ -280,7 +171,7 @@ class LibP2PManager {
       setIsListening(true);
       setPersistentStream(persistentStream);
       
-      appendOutput('✅ Auto-listening started! Waiting for messages from TON Bridge...');
+      appendOutput('✅ Auto-listening started! Waiting for messages...');
       
       // Read messages in a loop without closing the stream
       const reader = byteStream(persistentStream);
@@ -295,9 +186,7 @@ class LibP2PManager {
           
           const responseText = toString(response.subarray());
           
-          // Use message handler for TON Bridge
-          const { messageHandler } = await import('./init.js');
-          messageHandler.appendOutput(responseText.trim());
+          appendOutput(`${responseText.trim()}`);
         } catch (readErr) {
           if (readErr.message !== 'stream ended' && useStore.getState().isListening) {
             appendOutput(`⚠️ Stream error: ${readErr.message}`);
@@ -355,25 +244,6 @@ class LibP2PManager {
     setMultiaddrs(allAddresses.map((ma) => ma.toString()));
     
     appendOutput(`✅ Added circuit relay address to listening addresses`);
-  }
-
-  // Send start command to libp2p Bridge
-  async sendStartCommand(privateKey, publicKey, appendOutput) {
-    try {
-      const startCommand = `command=start&priv_key=${privateKey}&pub_key=${publicKey}`;
-      
-      // Send command using new stream
-      const { globalNode, currentRelayAddr } = useStore.getState();
-      const stream = await globalNode.dialProtocol(currentRelayAddr, CHAT_PROTOCOL);
-      const commandBytes = fromString(startCommand + '\n');
-      await stream.sink([commandBytes]);
-      
-      appendOutput('✅ Command=start sent successfully to libp2p Bridge');
-      appendOutput('🔄 libp2p Bridge will initialize with your keys');
-      
-    } catch (err) {
-      appendOutput(`❌ Failed to send command=start: ${err.message}`);
-    }
   }
 
   // Send message to TON Bridge

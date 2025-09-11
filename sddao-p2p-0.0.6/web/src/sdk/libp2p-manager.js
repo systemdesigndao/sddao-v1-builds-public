@@ -1,0 +1,409 @@
+import { noise } from '@chainsafe/libp2p-noise';
+import { yamux } from '@chainsafe/libp2p-yamux';
+import { circuitRelayTransport } from '@libp2p/circuit-relay-v2';
+import { identify, identifyPush } from '@libp2p/identify';
+import { webSockets } from '@libp2p/websockets';
+import * as filters from '@libp2p/websockets/filters';
+import { multiaddr } from '@multiformats/multiaddr';
+import { byteStream } from 'it-byte-stream';
+import { createLibp2p } from 'libp2p';
+import { fromString, toString } from 'uint8arrays';
+import useStore from '@/store';
+import { CHAT_PROTOCOL } from '@/constants';
+
+class LibP2PManager {
+  constructor() {}
+
+  // Process and append output messages
+  appendOutput(line) {
+    try {
+      const query = JSON.parse(line);
+      if (query.type === 'welcome') {
+        this.appendOutput(`🌐 ${query.message} (ID: ${query.libp2p_pub_key})`);
+        return;
+      }
+      if (query.type === 'ton_message') {
+        const messageData = {
+          text: query.message,
+          isAnotherUserMessage: true,
+          timestamp: Date.now()
+        };
+        
+        const { setOutput } = useStore.getState();
+        setOutput(prev => [...prev, messageData]);
+        return;
+      }
+      if (query.type === 'libp2p_message') {
+        const messageData = {
+          text: query.message,
+          isAnotherUserMessage: true,
+          timestamp: Date.now()
+        };
+        
+        const { setOutput } = useStore.getState();
+        setOutput(prev => [...prev, messageData]);
+        return;
+      }
+      if (query.type === 'ready_for_messages') {
+        const messageData = {
+          text: `📡 ${query.message}`,
+          isAnotherUserMessage: false,
+          timestamp: Date.now()
+        };
+        
+        const { setOutput } = useStore.getState();
+        setOutput(prev => [...prev, messageData]);
+        return;
+      }
+      if (query.type === 'command_response') {
+        const messageData = {
+          text: `📋 Command response: ${query.response}`,
+          isAnotherUserMessage: false,
+          timestamp: Date.now()
+        };
+        
+        const { setOutput } = useStore.getState();
+        setOutput(prev => [...prev, messageData]);
+        return;
+      }
+    } catch (err) {
+      // Skip catching error
+    }
+    
+    const messageData = {
+      text: line,
+      isAnotherUserMessage: false,
+      timestamp: Date.now()
+    };
+    
+    const { setOutput } = useStore.getState();
+    setOutput(prev => [...prev, messageData]);
+  }
+
+  // Initialize libp2p node
+  async initializeNode(appendOutput) {
+    const { globalNode, setGlobalNode, renderedNode, setRenderedNode } = useStore.getState();
+    
+    if (globalNode || renderedNode) return; // Already initialized
+    setRenderedNode(true);
+    
+    try {
+      appendOutput('🔄 Initializing libp2p node...');
+      
+      const node = await createLibp2p({
+        addresses: {
+          listen: [
+            '/p2p-circuit',
+          ]
+        },
+        transports: [
+          webSockets({
+            filter: filters.all
+          }),
+          circuitRelayTransport()
+        ],
+        connectionEncrypters: [noise()],
+        streamMuxers: [yamux()],
+        connectionGater: {
+          denyDialMultiaddr: () => false
+        },
+        services: {
+          identify: identify(),
+          identifyPush: identifyPush()
+        }
+      });
+
+      // Add protocol handler for both TON Bridge and libp2p Bridge
+      // This replaces startAutoListening for TON Bridge
+      node.handle(CHAT_PROTOCOL, async ({ stream }) => {
+        const chatStream = byteStream(stream);
+
+        // Process single message to avoid memory leaks
+        const processSingleMessage = async () => {
+          try {
+            const buf = await chatStream.read();
+            if (!buf) {
+              return false; // No data
+            }
+            const message = toString(buf.subarray());
+            
+            console.log('📥 Received message in node.handle:', message);
+            
+            // Process message using simple appendOutput function
+            this.appendOutput(message);
+            return true; // Continue processing
+          } catch (err) {
+            if (err.message === 'stream ended') {
+              return false; // End of stream
+            }
+            console.warn('Message processing error:', err.message);
+            return false; // Stop processing on error
+          }
+        };
+
+        // Process messages one by one to avoid blocking
+        try {
+          while (true) {
+            const shouldContinue = await processSingleMessage();
+            if (!shouldContinue) {
+              break;
+            }
+          }
+        } catch (err) {
+          console.warn('Stream handler error:', err.message);
+        }
+        
+        console.log('📡 Stream processing completed');
+      });
+
+      // Set up event listeners
+      this.setupEventListeners(node, appendOutput);
+
+      await node.start();
+      setGlobalNode(node);
+      
+      const { setMultiaddrs } = useStore.getState();
+      setMultiaddrs(node.getMultiaddrs().map((ma) => ma.toString()));
+      
+      appendOutput('✅ libp2p node initialized successfully');
+      
+    } catch (err) {
+      appendOutput(`❌ Failed to initialize libp2p node: ${err.message}`);
+    }
+  }
+
+  // Set up event listeners for the node
+  setupEventListeners(node, appendOutput) {
+    const { setConnections, setIsConnectedState, setMultiaddrs } = useStore.getState();
+
+    node.addEventListener('connection:open', (evt) => {
+      appendOutput(`✅ Connected to ${evt.detail.remoteAddr.toString()}`);
+      setConnections(node.getConnections().map(c => c.remoteAddr.toString()));
+      setIsConnectedState(true);
+    });
+
+    node.addEventListener('connection:close', () => {
+      appendOutput('Connection closed');
+      setConnections(node.getConnections().map(c => c.remoteAddr.toString()));
+      setIsConnectedState(false);
+    });
+
+    node.addEventListener('self:peer:update', () => {
+      // Update multiaddrs list, show circuit relay address
+      const currentAddresses = node.getMultiaddrs();
+      
+      // Check if we have any relay connections to add circuit relay address
+      const hasRelayConnection = node.getConnections().some(conn => 
+        conn.remoteAddr.toString().includes('/p2p/')
+      );
+      
+      let allAddresses = [...currentAddresses];
+      
+      if (hasRelayConnection) {
+        const circuitAddr = this.createCircuitRelayAddress(node);
+        allAddresses.push(multiaddr(circuitAddr));
+      }
+      
+      setMultiaddrs(allAddresses.map((ma) => ma.toString()));
+    });
+  }
+
+  // Connect to TON Bridge
+  async connectToBridge(ma, appendOutput) {
+    const { 
+      isConnecting, 
+      setIsConnecting, 
+      isConnected, 
+      setIsConnected, 
+      globalNode, 
+      setCurrentRelayAddr 
+    } = useStore.getState();
+
+    // Prevent double connection
+    if (isConnecting) {
+      appendOutput(`⚠️ Connection already in progress, please wait...`);
+      return;
+    }
+    
+    if (isConnected) {
+      appendOutput(`ℹ️ Already connected to TON Bridge`);
+      return;
+    }
+    
+    try {
+      setIsConnecting(true);
+      appendOutput(`🔗 Connecting to '${ma}'`);
+      
+      const signal = AbortSignal.timeout(10000);
+      await globalNode.dial(ma, { signal });
+      
+      appendOutput('✅ Connected to TON Bridge');
+      setIsConnected(true);
+      setCurrentRelayAddr(ma);
+      
+      // Add circuit relay address to listening addresses
+      this.addCircuitRelayAddress(globalNode, appendOutput);
+      
+      // node.handle() now processes all messages for both TON and libp2p Bridge
+      // No need for startAutoListening anymore
+      
+    } catch (err) {
+      appendOutput(`❌ Connection failed: ${err.message}`);
+      throw err;
+    } finally {
+      setIsConnecting(false);
+    }
+  }
+
+  // Start auto-listening for TON Bridge messages
+  async startAutoListening(appendOutput) {
+    const { 
+      isConnected, 
+      currentRelayAddr, 
+      globalNode, 
+      setIsListening, 
+      setPersistentStream 
+    } = useStore.getState();
+
+    if (!isConnected || !currentRelayAddr) {
+      return;
+    }
+    
+    try {
+      appendOutput('🎧 Starting auto-listening for TON Bridge...');
+      
+      // Open a persistent stream to the TON Bridge using the chat protocol
+      const persistentStream = await globalNode.dialProtocol(currentRelayAddr, CHAT_PROTOCOL, {
+        signal: AbortSignal.timeout(10000)
+      });
+      
+      setIsListening(true);
+      setPersistentStream(persistentStream);
+      
+      appendOutput('✅ Auto-listening started! Waiting for messages from TON Bridge...');
+      
+      // Read messages in a loop without closing the stream
+      const reader = byteStream(persistentStream);
+      
+      while (useStore.getState().isListening && useStore.getState().isConnected && persistentStream) {
+        try {
+          const response = await reader.read();
+          if (!response) {
+            // No data but stream might still be active, continue
+            continue;
+          }
+          
+          const responseText = toString(response.subarray());
+          
+          // Use message handler for TON Bridge
+          const { messageHandler } = await import('./init.js');
+          messageHandler.appendOutput(responseText.trim());
+        } catch (readErr) {
+          if (readErr.message !== 'stream ended' && useStore.getState().isListening) {
+            appendOutput(`⚠️ Stream error: ${readErr.message}`);
+            // Don't break the loop, just continue reading
+            continue;
+          }
+          // Only break if stream actually ended
+          if (readErr.message === 'stream ended') {
+            appendOutput('⚠️ Stream ended, will attempt to restart');
+            break;
+          }
+          // For other errors, continue reading
+          continue;
+        }
+      }    
+    } catch (err) {
+      appendOutput(`❌ Auto-listening failed: ${err.message}`);
+      setIsListening(false);
+    }
+  }
+
+  // Create circuit relay address
+  createCircuitRelayAddress(node) {
+    const peerId = node.peerId.toString();
+    
+    // Get the relay connection to build the full circuit relay address
+    const relayConnections = node.getConnections().filter(conn => 
+      conn.remoteAddr.toString().includes('/p2p/')
+    );
+    
+    if (relayConnections.length > 0) {
+      const relayAddr = relayConnections[0].remoteAddr;
+      
+      // Create full circuit relay address: relay_address/p2p-circuit/p2p/client_peer_id
+      return `${relayAddr.toString()}/p2p-circuit/p2p/${peerId}`;
+    }
+    
+    // Fallback to simple circuit relay address
+    return `/p2p-circuit/p2p/${peerId}`;
+  }
+
+  // Add circuit relay address to listening addresses
+  addCircuitRelayAddress(node, appendOutput) {
+    const circuitAddr = this.createCircuitRelayAddress(node);
+    appendOutput(`🔗 Your libp2p address: ${circuitAddr}`);
+    
+    // Get current listening addresses
+    const currentAddresses = node.getMultiaddrs();
+    
+    // Create list with circuit relay address
+    const allAddresses = [...currentAddresses, multiaddr(circuitAddr)];
+    
+    // Update store with all addresses
+    const { setMultiaddrs } = useStore.getState();
+    setMultiaddrs(allAddresses.map((ma) => ma.toString()));
+    
+    appendOutput(`✅ Added circuit relay address to listening addresses`);
+  }
+
+  // Send start command to libp2p Bridge
+  async sendStartCommand(privateKey, publicKey, appendOutput) {
+    try {
+      const startCommand = `command=start&priv_key=${privateKey}&pub_key=${publicKey}`;
+      
+      // Send command using new stream
+      const { globalNode, currentRelayAddr } = useStore.getState();
+      const stream = await globalNode.dialProtocol(currentRelayAddr, CHAT_PROTOCOL);
+      const commandBytes = fromString(startCommand + '\n');
+      await stream.sink([commandBytes]);
+      
+      appendOutput('✅ Command=start sent successfully to libp2p Bridge');
+      appendOutput('🔄 libp2p Bridge will initialize with your keys');
+      
+    } catch (err) {
+      appendOutput(`❌ Failed to send command=start: ${err.message}`);
+    }
+  }
+
+  // Send message to TON Bridge
+  async sendMessage(message, appendOutput) {
+    const { globalNode, isConnected, currentRelayAddr } = useStore.getState();
+    
+    if (!globalNode || !isConnected) {
+      appendOutput('❌ Not connected');
+      return;
+    }
+    
+    if (!message.trim()) {
+      return; // Don't send empty messages
+    }
+    
+    try {
+      // Create a new stream for each message
+      const stream = await globalNode.dialProtocol(currentRelayAddr, CHAT_PROTOCOL);
+      
+      // Send message using new stream
+      const messageBytes = fromString(message + '\n');
+      await stream.sink([messageBytes]);
+      appendOutput(`Sending message to TON Bridge: '${message}'`);
+      
+      appendOutput(`✅ Command sent to TON Bridge successfully!`);
+      
+    } catch (err) {
+      appendOutput(`❌ Failed to send message: ${err.message}`);
+    }
+  }
+}
+
+export default LibP2PManager;

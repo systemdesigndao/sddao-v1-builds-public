@@ -37,18 +37,11 @@ export const useTonP2PBridge = () => {
     }
 
     try {
-      const { peer, privateKey, publicKey } = useStore.getState();
+      const { peer } = useStore.getState();
       const ma = multiaddr(peer);
-      
-      // Connect to bridge
       await libp2pManager.connectToBridge(ma, appendOutput);
       setIsConnectedState(true);
       setStatus('connected');
-      
-      // For libp2p Bridge, send start command with keys
-      if (privateKey && publicKey) {
-        await libp2pManager.sendStartCommand(privateKey, publicKey, appendOutput);
-      }
       
     } catch (err) {
       appendOutput(`❌ Connection failed: ${err.message}`);
@@ -63,34 +56,18 @@ export const useTonP2PBridge = () => {
       return;
     }
     
-    const { message, setMessage, currentRelayAddr } = useStore.getState();
+    const { message, setMessage } = useStore.getState();
     if (!message.trim()) {
       return; // Don't send empty messages
     }
     
     let messageToSend = message;
-    
-    // Check if this is libp2p Bridge or TON Bridge
-    const isLibP2PBridge = currentRelayAddr && currentRelayAddr.toString().includes(':8082/');
-    
-    if (isLibP2PBridge) {
-      // For libp2p Bridge, send as libp2p message
-      if (messageToSend.includes('connect=')) {
-        internalConnectionRef.current = messageToSend;
-      }
-      
-      if (internalConnectionRef.current) {
-        messageToSend = 'message=' + internalConnectionRef.current.split('=')[1] + ':' + messageToSend;
-      }
-    } else {
-      // For TON Bridge, use original logic
-      if (internalConnectionRef.current) {
-        messageToSend = 'message=' + internalConnectionRef.current.split('=')[1] + ':' + messageToSend;
-      }
+    if (internalConnectionRef.current) {
+      messageToSend = 'message=' + internalConnectionRef.current.split('=')[1] + ':' + messageToSend;
+    }
 
-      if (messageToSend.includes('connect=')) {
-        internalConnectionRef.current = messageToSend;
-      }
+    if (messageToSend.includes('connect=')) {
+      internalConnectionRef.current = messageToSend;
     }
 
     try {
