@@ -200,7 +200,7 @@ Once your node is running, use these interactive commands:
 | `/connect <key>` | Connect to peer via DHT using public key | `/connect a1b2c3d4...` |
 | `/msg <key> <text>` | Send message via RLDP | `/msg a1b2c3d4... Hello!` |
 | `/ollama <peer_key> <model> <prompt>` (0.0.3 only) | Send prompt to a local Ollama instance over TON | `/ollama a1b2c3d4... deepseek-r1:1.5b hey` |
-| `/ai <peer_key> <model> <prompt>` (0.0.4, 0.0.5 versions) | Send prompt to a local Ollama or llama-cli instance over TON | `/ai a1b2c3d4... deepseek-r1:1.5b hey OR /ai a1b2c3d4... DeepSeek-R1-Distill-Qwen-1.5B-Q8_0.gguf hey` |
+| `/ai <peer_key> <model> <prompt>` (0.0.4, 0.0.5, 0.0.6 cli versions) | Send prompt to a local Ollama or llama-cli instance over TON | `/ai a1b2c3d4... deepseek-r1:1.5b hey OR /ai a1b2c3d4... DeepSeek-R1-Distill-Qwen-1.5B-Q8_0.gguf hey` |
 | `/list` | Show connected peers | `/list` |
 | `/exit` | Exit the application | `/exit` |
 
