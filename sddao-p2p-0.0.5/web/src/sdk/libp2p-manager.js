@@ -51,12 +51,17 @@ class LibP2PManager {
       // This replaces startAutoListening for TON Bridge
       node.handle(CHAT_PROTOCOL, async ({ stream }) => {
         const chatStream = byteStream(stream);
+        let isActive = true;
 
-        try {
-          while (true) {
+        // Handle single message processing to avoid memory leaks
+        const processMessage = async () => {
+          try {
             const buf = await chatStream.read();
-            const message = toString(buf.subarray());
+            if (!buf || !isActive) {
+              return false; // End of stream or inactive
+            }
             
+            const message = toString(buf.subarray());
             console.log('📥 Received message in node.handle:', message);
             
             // Try to parse JSON response first
@@ -116,16 +121,34 @@ class LibP2PManager {
                 appendOutput(`📨 Received: ${message.trim()}`);
               }
             }
+            return true; // Continue processing
+          } catch (err) {
+            if (err.message === 'stream ended') {
+              return false; // End of stream
+            }
+            console.warn('Message processing error:', err.message);
+            return false; // Stop processing on error
+          }
+        };
+
+        // Process messages one by one to avoid memory leaks
+        try {
+          while (isActive) {
+            const shouldContinue = await processMessage();
+            if (!shouldContinue) {
+              break;
+            }
           }
         } catch (err) {
-          if (err.message !== 'stream ended') {
-            appendOutput(`⚠️ Chat stream error: ${err.message}`);
+          console.warn('Stream handler error:', err.message);
+        } finally {
+          isActive = false;
+          try {
+            stream.close();
+          } catch (err) {
+            // Stream already closed
           }
         }
-        // Don't close the stream - let it stay open (Yamux will manage it)
-        appendOutput('🔄 Yamux stream kept open for efficient multiplexing');
-        appendOutput('🔄 Multiple streams can now be created over this connection');
-        appendOutput('🔄 TCP connection preserved for future stream creation');
       });
 
       // Set up event listeners
