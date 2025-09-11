@@ -145,7 +145,7 @@ By default here used `llama-cli`:
 ./sddao-p2p-0.0.3-aarch64 Cobb <ip> <port>
 ```
 
-Then use `/ai` to ask from another peer local LLM (e.g `DeepSeek-R1-Distill-Qwen-1.5B-Q8_0.gguf`):
+Then use `/ai` to ask from another peer local LLM (e.g [`DeepSeek-R1-Distill-Qwen-1.5B-Q8_0.gguf`](https://huggingface.co/lmstudio-community/DeepSeek-R1-Distill-Qwen-1.5B-GGUF/blob/main/DeepSeek-R1-Distill-Qwen-1.5B-Q8_0.gguf)):
 ```bash
 # Use peer public key
 /ai a1b2c3d4... DeepSeek-R1-Distill-Qwen-1.5B-Q8_0.gguf hey
