@@ -20,8 +20,8 @@ Enter address from bridge, press `Generate keys` button, TON shadow node will au
 
 # Available features
 
-1. Messages, web to web, web to cli (tested with 0.0.2 & 0.0.5 version, working charming, should work with 0.0.3, 0.0.4 also)
-2. AI requests – wip, will work as in CLI version (0.0.3 & 0.0.4)
+1. Messages, web to web, web to cli (for TON tested with 0.0.2 & 0.0.5 & 0.0.6 version, working charming, should work with 0.0.3, 0.0.4 also)
+2. AI requests – wip, will work as in CLI version's with `/ai` command
 
 # Compatibility
 
