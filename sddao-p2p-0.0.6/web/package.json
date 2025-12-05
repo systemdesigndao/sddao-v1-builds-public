@@ -11,25 +11,25 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@chainsafe/libp2p-noise": "^16.0.0",
-    "@chainsafe/libp2p-yamux": "^7.0.0",
-    "@libp2p/circuit-relay-v2": "^3.0.0",
-    "@libp2p/identify": "^3.0.1",
-    "@libp2p/ping": "^2.0.1",
-    "@libp2p/websockets": "^9.0.0",
-    "@multiformats/multiaddr": "^12.0.0",
-    "@tailwindcss/vite": "^4.1.13",
+    "@chainsafe/libp2p-noise": "^17.0.0",
+    "@chainsafe/libp2p-yamux": "^8.0.1",
+    "@libp2p/circuit-relay-v2": "^4.1.2",
+    "@libp2p/identify": "^4.0.9",
+    "@libp2p/ping": "^3.0.9",
+    "@libp2p/websockets": "^10.1.2",
+    "@multiformats/multiaddr": "^13.0.1",
+    "@tailwindcss/vite": "^4.1.17",
     "it-byte-stream": "^2.0.3",
-    "it-pushable": "^3.2.0",
-    "libp2p": "^2.0.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "tailwindcss": "^4.1.13",
-    "uint8arrays": "^5.0.0",
-    "zustand": "^5.0.8"
+    "it-pushable": "^3.2.3",
+    "libp2p": "^3.1.2",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
+    "tailwindcss": "^4.1.17",
+    "uint8arrays": "^5.1.0",
+    "zustand": "^5.0.9"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.2.1",
-    "vite": "^6.0.3"
+    "@vitejs/plugin-react": "^5.1.1",
+    "vite": "^7.2.6"
   }
 }
